@@ -31,9 +31,9 @@ const createJWT = async (object) => {
 /**
  * Verify JWT token 
  */
-const verifyJWT = async (data) => {
+const verifyJWT = async (token) => {
   try {
-    const decodedToken = jwt.verify(data, config.jwt.secret);
+    const decodedToken = jwt.verify(token, config.jwt.secret);
     return {
       success: true,
       data: decodedToken

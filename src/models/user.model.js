@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { getFileURL } = require('../helpers/assets')
 
 const userSchema = new mongoose.Schema({
      first_name: {
@@ -23,7 +24,18 @@ const userSchema = new mongoose.Schema({
           type: String,
           required: true,
           set: value => bcrypt.hashSync(value, 10)
-     },     
+     },
+     profile_image: {
+          type: String,
+          required: false,
+          default: null,
+          get: value => {
+               if (value) {
+                    return getFileURL('profile_images', value)
+               };
+               return null
+          }
+     },
      is_deleted: {
           type: Boolean,
           required: true,
@@ -39,7 +51,6 @@ const userSchema = new mongoose.Schema({
                getters: true,
                setters: true
           },
-          versionKey: false
      }
 
 );

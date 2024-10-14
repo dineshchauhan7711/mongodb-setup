@@ -106,9 +106,6 @@ const login = async (req, res) => {
                first_name: user.first_name,
                last_name: user.last_name,
                email: user.email,
-               current_submission: user.current_submission,
-               submission_date: user.submission_date,
-               authorized: user.authorized,
                token
           };
           return response.success(res, 1002, responseData);
@@ -118,9 +115,23 @@ const login = async (req, res) => {
      }
 };
 
+/**
+ * Get profile  
+ */
+const getProfile = async (req, res) => {
+     try {
+          const { _id } = req.user;
+          const user = await User.findOne({ _id }, '_id first_name last_name email profile_image');
+          return response.success(res, 1003, user);
+     } catch (error) {
+          console.log('error', error);
+          return response.error(res, 9999);
+     }
+};
 
 
 module.exports = {
      signup,
-     login
+     login,
+     getProfile
 };
