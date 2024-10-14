@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
      }
 },
      {
+          timestamps: {
+               createdAt: 'created_at',
+               updatedAt: 'updated_at'
+          },
           toJSON: {
                getters: true,
                setters: true

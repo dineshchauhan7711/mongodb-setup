@@ -13,7 +13,10 @@ const userSessionSchema = new mongoose.Schema({
           required: true,
      }
 }, {
-     versionKey: false
+     timestamps: {
+          createdAt: 'created_at',
+          updatedAt: 'updated_at'
+     }
 });
 
 userSessionSchema.static('createToken', async function (user_id) {
