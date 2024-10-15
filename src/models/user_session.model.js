@@ -19,7 +19,7 @@ const userSessionSchema = new mongoose.Schema({
      }
 });
 
-userSessionSchema.static('createToken', async function (user_id) {
+userSessionSchema.static('createSessionToken', async function (user_id) {
      const tokenData = await createJWT({ data: { user_id }, expiry_time: session_token_expiry_time });
      await this.create({ user_id, token: tokenData.token });
      return tokenData.token;

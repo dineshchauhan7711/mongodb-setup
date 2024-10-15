@@ -36,6 +36,11 @@ const userSchema = new mongoose.Schema({
                return null
           }
      },
+     forgot_password_token: {
+          type: String,
+          required: false,
+          default: null
+     },
      is_deleted: {
           type: Boolean,
           required: true,

@@ -63,7 +63,6 @@ const initializeSocket = (server) => {
           try {
                // Extract token from headers
                const token = socket.handshake.headers.authorization;
-               console.log('token', token)
                if (!token) {
                     return next(new Error("Unauthorized. No token provided."));
                }

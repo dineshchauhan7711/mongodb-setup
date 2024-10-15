@@ -1,6 +1,13 @@
+// Modules
+const fs = require('fs');
+
 // Helpers/Files
 const validator = require('../helpers/validator');
 const response = require('../helpers/response');
+const { createJWT, verifyJWT } = require('../helpers/json_web_token');
+const { jwt: { forgot_link_expiry_time }, frontend_base_url, email_service: { support_center_email } } = require('../config/config');
+const { mailService } = require('../helpers/email_service/email_service');
+// const forgotPassEmailTemplate = require('../helpers/email_service/email_formats/forgot_password.html');
 
 // Models
 const db = require('../models');
@@ -17,7 +24,7 @@ const signup = async (req, res) => {
           const validation = new validator(req.body, {
                first_name: 'required|string|min:3|max:50',
                last_name: 'required|string|min:3|max:50',
-               email: 'required|email|string',
+               email: 'required|email|string|lowercase',
                password: 'required|string|min:8|max:30',
           });
           if (validation.fails()) {
@@ -48,7 +55,7 @@ const signup = async (req, res) => {
           });
 
           // Create session
-          const token = await UserSession.createToken(userData._id);
+          const token = await UserSession.createSessionToken(userData._id);
 
           const responseData = {
                _id: userData._id,
@@ -73,7 +80,7 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
      try {
           const validation = new validator(req.body, {
-               email: 'required|email|string',
+               email: 'required|email|string|lowercase',
                password: 'required|string',
           });
           if (validation.fails()) {
@@ -99,7 +106,7 @@ const login = async (req, res) => {
           };
 
           // Create session
-          const token = await UserSession.createToken(user._id);
+          const token = await UserSession.createSessionToken(user._id);
 
           const responseData = {
                _id: user._id,
@@ -143,11 +150,185 @@ const logout = async (req, res) => {
      }
 };
 
+/**
+ * Send forgot password email
+ */
+const sendForgotPasswordEmail = async (req, res) => {
+     try {
+          const validation = new validator(req.body, {
+               email: 'required|email|string',
+          });
+          if (validation.fails()) {
+               const firstMessage = Object.keys(validation.errors.all())[0];
+               return response.error(res, validation.errors.first(firstMessage), 400);
+          };
+          const { email } = req.body;
+
+          // Check user exists
+          const user = await User.findOne({ email }, '_id first_name last_name email is_deleted');
+          if (!user) {
+               return response.error(res, 1007);
+          };
+
+          // Check if user is deleted
+          if (user.is_deleted) {
+               return response.error(res, 1018, 409);
+          };
+
+          // Create forgot password link
+          const tokenRes = await createJWT({ data: { user_id: user._id }, expiry_time: forgot_link_expiry_time });
+          if (!tokenRes.success) {
+               return response.error(res, 1020);
+          };
+          console.log('tokenRes', tokenRes)
+
+          // Save forgot password link
+          await User.updateOne(
+               { _id: user._id },
+               {
+                    $set: {
+                         forgot_password_token: tokenRes.token
+                    }
+               });
+
+          // Read email template
+          let template = fs.readFileSync(
+               './src/helpers/email_service/email_formats/forgot_password.html',
+               'utf-8'
+          );
+          // Replace placeholders with dynamic values
+          template = template.replace('${name}', `${user.first_name} ${user.last_name}`);
+          template = template.replace('${link}', `${frontend_base_url}/forgot-password?token=${tokenRes.token}`);
+          template = template.replace('${support_center_email}', support_center_email);
+
+
+          // Send OTP
+          const mailResponse = await mailService(
+               email,
+               'Forgot Password OTP',
+               template
+          );
+          if (!mailResponse.success) {
+               return response.error(res, 1011);
+          };
+
+          return response.success(res, 1012);
+     } catch (error) {
+          console.log('error', error);
+          return response.error(res, 9999);
+     }
+};
+
+/**
+ * Verify forgot password OTP
+ */
+const verifyForgotPasswordLink = async (req, res) => {
+     try {
+          const validation = new validator(req.body, {
+               token: 'required|string',
+          });
+          if (validation.fails()) {
+               const firstMessage = Object.keys(validation.errors.all())[0];
+               return response.error(res, validation.errors.first(firstMessage), 400);
+          };
+          const { token } = req.body;
+
+          // Verify forgot password token
+          const verifyResponse = await verifyJWT(token);
+          if (!verifyResponse.success) {
+               return response.error(res, 1014);
+          };
+
+          // Check user exists
+          const user = await User.findOne({ _id: verifyResponse.data.user_id }, '_id email is_deleted forgot_password_token');
+          if (!user) {
+               return response.error(res, 1014);
+          };
+
+          // Check if user is deleted
+          if (user.is_deleted) {
+               return response.error(res, 1018, 409);
+          };
+
+          // Check if forgot password token is expired
+          if (user.forgot_password_token !== token) {
+               return response.error(res, 1014);
+          };
+
+
+          return response.success(res, 1015);
+     } catch (error) {
+          console.log('error', error);
+          return response.error(res, 9999);
+     }
+};
+
+/**
+ * Forgot password
+ */
+const forgotPassword = async (req, res) => {
+     try {
+          const validation = new validator(req.body, {
+               token: 'required|string',
+               password: 'required|string|min:8|max:30',
+          });
+          if (validation.fails()) {
+               const firstMessage = Object.keys(validation.errors.all())[0];
+               return response.error(res, validation.errors.first(firstMessage), 400);
+          };
+          const { token, password } = req.body;
+
+          // Verify forgot password token
+          const verifyResponse = await verifyJWT(token);
+          if (!verifyResponse.success) {
+               return response.error(res, 1014);
+          };
+
+          // Check user exists
+          const user = await User.findOne({ _id: verifyResponse.data.user_id }, '_id email is_deleted forgot_password_token');
+          if (!user) {
+               return response.error(res, 1014);
+          };
+
+          // Check if user is deleted
+          if (user.is_deleted) {
+               return response.error(res, 1018, 409);
+          };
+
+          // Check if forgot password token is expired
+          if (user.forgot_password_token !== token) {
+               return response.error(res, 1014);
+          };
+
+          // Update password
+          await User.updateOne(
+               { _id: user._id },
+               {
+                    $set: {
+                         password,
+                         forgot_password_token: null,
+                    }
+               }
+          );
+
+          // Delete all sessions
+          await UserSession.deleteMany({ user_id: user._id });
+
+          return response.success(res, 1016);
+     } catch (error) {
+          console.log('error', error);
+          return response.error(res, 9999);
+     }
+};
+
 
 
 module.exports = {
      signup,
      login,
      getProfile,
-     logout
+     logout,
+     sendForgotPasswordEmail,
+     verifyForgotPasswordLink,
+     forgotPassword
 };

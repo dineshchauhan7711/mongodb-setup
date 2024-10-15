@@ -12,14 +12,15 @@ const MESSAGES = {
     '1009': 'Please enter correct password.',
     '1010': 'Unauthorized Users.',
     '1011': 'Error while sending email.',
-    '1012': 'OTP sent successfully. Please check your email.',
+    '1012': 'Email sent successfully. Please check your email.',
     '1013': 'Please enter correct OTP.',
-    '1014': 'OTP expired. Please try again.',
-    '1015': 'OTP verified successfully.',
+    '1014': 'Link expired. Please try again.',
+    '1015': 'Link verified successfully.',
     '1016': 'Password changed successfully.',
     '1017': "Account deleted successfully.",
     '1018': 'Your account is deactivated. Please contact to admin.',
     '1019': 'Profile updated successfully.',
+    '1020': 'Error while generating forgot password link.',
    
 
     // Common
