@@ -1,13 +1,18 @@
 // Modules
 const fs = require('fs');
+const path = require('path');
 
 // Helpers/Files
 const validator = require('../helpers/validator');
 const response = require('../helpers/response');
 const { createJWT, verifyJWT } = require('../helpers/json_web_token');
-const { jwt: { forgot_link_expiry_time }, frontend_base_url, email_service: { support_center_email } } = require('../config/config');
 const { mailService } = require('../helpers/email_service/email_service');
-// const forgotPassEmailTemplate = require('../helpers/email_service/email_formats/forgot_password.html');
+const { uploadFile, deleteFile, profileImageValidation } = require('../helpers/files');
+const {
+     jwt: { forgot_link_expiry_time },
+     frontend_base_url,
+     email_service: { support_center_email }
+} = require('../config/config');
 
 // Models
 const db = require('../models');
@@ -47,27 +52,15 @@ const signup = async (req, res) => {
           };
 
           // Create new user
-          const userData = await User.create({
+          await User.create({
                first_name,
                last_name,
                email,
                password
           });
 
-          // Create session
-          const token = await UserSession.createSessionToken(userData._id);
 
-          const responseData = {
-               _id: userData._id,
-               first_name: userData.first_name,
-               last_name: userData.last_name,
-               email: userData.email,
-               current_submission: userData.current_submission,
-               submission_date: userData.submission_date,
-               authorized: userData.authorized,
-               token
-          };
-          return response.success(res, 1001, responseData, 201);
+          return response.success(res, 1001, null, 201);
      } catch (error) {
           console.log('error', error);
           return response.error(res, 9999);
@@ -321,6 +314,72 @@ const forgotPassword = async (req, res) => {
      }
 };
 
+/**
+ * Update profile
+ */
+const updateProfile = async (req, res) => {
+     try {
+          const validation = new validator(req.body, {
+               first_name: 'string|min:3|max:50',
+               last_name: 'string|min:3|max:50',
+          });
+          if (validation.fails()) {
+               const firstMessage = Object.keys(validation.errors.all())[0];
+               return response.error(res, validation.errors.first(firstMessage), 400);
+          };
+          const {
+               user: { _id },
+               body: { first_name, last_name },
+               files: file
+          } = req;
+
+          // Find user
+          const user = await User.findOne({ _id }, '_id first_name last_name profile_image');
+          if (!user) {
+               return response.error(res, 1007, 404);
+          };
+
+          let updateObj = {
+               first_name,
+               last_name,
+          };
+
+          if (file.length > 0) {
+               // Validate file
+               const validateRes = await profileImageValidation(file);
+               if (!validateRes.success) {
+                    return response.error(res, validateRes.message, 400);
+               };
+
+               // Upload file
+               const uploadRes = await uploadFile(file[0], "profileImages");
+               if (!uploadRes.success) {
+                    return response.error(res, 1021, 400);
+               };
+
+               updateObj.profile_image = uploadRes.fileName;
+          };
+
+
+          // Update user
+          await User.updateOne(
+               { _id },
+               {
+                    $set: updateObj
+               },
+          );
+
+          // Delete Old Profile Image
+          if (user.profile_image) {
+               await deleteFile(path.basename(user.profile_image), "profileImages");
+          };
+
+          return response.success(res, 1019);
+     } catch (error) {
+          console.log('error', error);
+          return response.error(res, 9999);
+     }
+};
 
 
 module.exports = {
@@ -330,5 +389,6 @@ module.exports = {
      logout,
      sendForgotPasswordEmail,
      verifyForgotPasswordLink,
-     forgotPassword
+     forgotPassword,
+     updateProfile
 };

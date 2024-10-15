@@ -21,7 +21,8 @@ const MESSAGES = {
     '1018': 'Your account is deactivated. Please contact to admin.',
     '1019': 'Profile updated successfully.',
     '1020': 'Error while generating forgot password link.',
-   
+    '1021': 'Error while uploading file.',
+
 
     // Common
     '9000': 'Please Enter Valid data!',

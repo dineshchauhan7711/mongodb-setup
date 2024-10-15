@@ -10,6 +10,7 @@ const { userAuth } = require('../middlewares/auth');
 router.post('/signup', userController.signup);
 router.post('/login', userController.login);
 router.get('/profile', userAuth, userController.getProfile);
+router.patch('/update-profile', userAuth, userController.updateProfile);
 router.delete('/logout', userAuth, userController.logout);
 router.post('/send-forgot-password-email', userController.sendForgotPasswordEmail);
 router.post('/verify-forgot-password-link', userController.verifyForgotPasswordLink);

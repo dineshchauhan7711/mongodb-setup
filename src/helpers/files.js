@@ -1,4 +1,6 @@
+// Modules
 const fs = require('fs');
+const path = require('path');
 
 
 /**
@@ -62,8 +64,50 @@ async function deleteFile(fileName, pathFolder = 'profile') {
      }
 };
 
+/***
+ * Profile Image Validation
+ */
+async function profileImageValidation(file) {
+     try {
+          // Only one image is allowed
+          if (file.length != 1) {
+               return {
+                    success: false,
+                    message: "Please select only one image."
+               };
+          };
+
+          // File type validation
+          const fileTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+          if (!fileTypes.includes(file[0].mimetype)) {
+               return {
+                    success: false,
+                    message: "Only jpeg, jpg and png files are allowed."
+               };
+          };
+
+          // File size validation
+          if (file[0].size >= 5 * 1024 * 1024) {
+               return {
+                    success: false,
+                    message: "File size should be maximum 5 MB."
+               };
+          };
+
+          return {
+               success: true
+          };
+     } catch (error) {
+          console.log('error :>> ', error);
+          return {
+               success: false,
+               message: "Something went wrong when validating file."
+          }
+     }
+};
 
 module.exports = {
      uploadFile,
-     deleteFile
+     deleteFile,
+     profileImageValidation
 }
