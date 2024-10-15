@@ -129,9 +129,25 @@ const getProfile = async (req, res) => {
      }
 };
 
+/**
+ * Logout
+ */
+const logout = async (req, res) => {
+     try {
+          const headerToken = req.headers.authorization;
+          await UserSession.deleteOne({ token: headerToken });
+          return response.success(res, 1006);
+     } catch (error) {
+          console.log('error', error);
+          return response.error(res, 9999);
+     }
+};
+
+
 
 module.exports = {
      signup,
      login,
-     getProfile
+     getProfile,
+     logout
 };

@@ -10,6 +10,7 @@ const { userAuth } = require('../middlewares/auth');
 router.post('/signup', userController.signup);
 router.post('/login', userController.login);
 router.get('/profile', userAuth, userController.getProfile);
+router.delete('/logout', userAuth, userController.logout);
 
 
 module.exports = router;
