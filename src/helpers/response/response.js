@@ -1,4 +1,4 @@
-const messages = require('../lang/en/messages.js');
+const messages = require('./messages.js');
 
 /***
  * Success Response 
@@ -7,7 +7,7 @@ module.exports.success = function (res, messageCode = null, data = null, statusC
     let response = {};
     response.success = true;
     response.message = messages.getMessage(messageCode);
-    if(data != null){
+    if (data != null) {
         response.data = data;
     }
     return res.status(statusCode).send(response);

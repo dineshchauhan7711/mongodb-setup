@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { createJWT } = require('../helpers/json_web_token');
+const { jsonWebToken: { createJWT } } = require('../helpers');
 const { jwt: { session_token_expiry_time } } = require('../config/config');
 
 const userSessionSchema = new mongoose.Schema({

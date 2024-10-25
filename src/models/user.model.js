@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { getFileURL } = require('../helpers/assets')
+const { assets: { getFileURL } } = require('../helpers')
 
 const userSchema = new mongoose.Schema({
      first_name: {
@@ -35,6 +35,12 @@ const userSchema = new mongoose.Schema({
                };
                return null
           }
+     },
+     role: {
+          type: String,
+          required: false,
+          default: 'user',
+          enum: ['user', 'admin']
      },
      forgot_password_token: {
           type: String,

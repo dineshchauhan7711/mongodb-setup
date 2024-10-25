@@ -22,6 +22,7 @@ const MESSAGES = {
     '1019': 'Profile updated successfully.',
     '1020': 'Error while generating forgot password link.',
     '1021': 'Error while uploading file.',
+    '1022': 'You have no permission to perform this action.',
 
 
     // Common

@@ -2,22 +2,27 @@
 const fs = require('fs');
 const path = require('path');
 
-// Helpers/Files
-const validator = require('../helpers/validator');
-const response = require('../helpers/response');
-const { createJWT, verifyJWT } = require('../helpers/json_web_token');
-const { mailService } = require('../helpers/email_service/email_service');
-const { uploadFile, deleteFile, profileImageValidation } = require('../helpers/files');
+// Config
 const {
      jwt: { forgot_link_expiry_time },
      frontend_base_url,
      email_service: { support_center_email }
 } = require('../config/config');
 
+// Helpers/Files
+const {
+     validator,
+     response,
+     jsonWebToken: { createJWT, verifyJWT },
+     emailService: { mailService },
+     files: { uploadFile, deleteFile, profileImageValidation }
+} = require('../helpers');
+
 // Models
-const db = require('../models');
-const User = db.user;
-const UserSession = db.userSession;
+const {
+     User,
+     UserSession
+} = require('../models');
 
 
 
@@ -121,7 +126,7 @@ const login = async (req, res) => {
 const getProfile = async (req, res) => {
      try {
           const { _id } = req.user;
-          const user = await User.findOne({ _id }, '_id first_name last_name email profile_image');
+          const user = await User.findOne({ _id }, '_id first_name last_name email profile_image role');
           return response.success(res, 1003, user);
      } catch (error) {
           console.log('error', error);
@@ -173,7 +178,6 @@ const sendForgotPasswordEmail = async (req, res) => {
           if (!tokenRes.success) {
                return response.error(res, 1020);
           };
-          console.log('tokenRes', tokenRes)
 
           // Save forgot password link
           await User.updateOne(

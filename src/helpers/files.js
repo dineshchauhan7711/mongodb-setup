@@ -6,7 +6,6 @@ const path = require('path');
 /**
  * File Upload
  */
-
 function uploadFile(file, pathFolder = 'profile') {
      try {
           let fileName = String(Date.now()) + Math.floor(10000000 + Math.random() * 90000000) + path.extname(file.originalname);
@@ -33,11 +32,9 @@ function uploadFile(file, pathFolder = 'profile') {
      }
 };
 
-
 /***
  * File Delete
  */
-
 async function deleteFile(fileName, pathFolder = 'profile') {
      try {
           const deletePath = './public/images/' + pathFolder + '/' + fileName;

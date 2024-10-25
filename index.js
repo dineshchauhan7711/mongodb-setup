@@ -10,10 +10,10 @@ const db = require('./src/config/db.config');
 // Create Server
 const server = http.createServer(app);
 
+// Socket Initialization
+require('./src/utils/socket').initializeSocket(server);
+
 // Initialize Server
 server.listen(config.port, () => {
      console.log(`Server is running at ${config.port}`);
 });
-
-// Socket Initialization
-require('./src/utils/socket').initializeSocket(server);

@@ -2,10 +2,11 @@
 const { Server } = require("socket.io");
 
 // Models
-const db = require('../models');
-const SocketIds = db.socketIds;
-const User = db.user;
-const UserSession = db.userSession;
+const {
+     User,
+     SocketIds,
+     UserSession
+} = require('../models');
 
 
 // Add socket id

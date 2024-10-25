@@ -1,4 +1,4 @@
-const response = require('./helpers/response');
+const { response } = require('./helpers');
 
 const express = require('express');
 const app = express();

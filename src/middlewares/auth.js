@@ -1,11 +1,13 @@
 // Files/Helpers
 const validator = require('../helpers/validator');
-const response = require('../helpers/response');
+const response = require('../helpers/response/response');
 const { verifyJWT } = require('../helpers/json_web_token');
 
 // Models
-const User = require('../models/user.model');
-const UserSession = require('../models/user_session.model');
+const {
+     User,
+     UserSession
+} = require('../models');
 
 
 /**
@@ -36,7 +38,7 @@ const userAuth = async function (req, res, next) {
           if (isAuth != null) {
                let userData = await User.findOne({
                     _id: isAuth.user_id
-               }, '_id');
+               }, '_id role');
                if (!userData) {
                     return response.error(res, 1010, 401);
                };
@@ -57,7 +59,29 @@ const userAuth = async function (req, res, next) {
      }
 };
 
+/**
+ * Middleware function that checks if the user has the required permission role.
+ */
+const userPermission = (permissionRoles) => {
+     return async function (req, res, next) {
+          try {
+               const { user: { role } } = req;
+
+               if (!permissionRoles.includes(role)) {
+                    return response.error(res, 1022, 401);
+               };
+
+               next();
+          } catch (error) {
+               console.log("error in permission middleware :>> ", error);
+               return response.error(res, 9999);
+          }
+     };
+};
+
+
 
 module.exports = {
-     userAuth
+     userAuth,
+     userPermission
 };
