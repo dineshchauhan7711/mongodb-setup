@@ -4,7 +4,7 @@ const config = require('../config/config');
 /***
  * Get File URL
  */
-function getFileURL(folderName, fileName) {
+const getFileURL = function (folderName, fileName) {
     return config.project_path + `/${folderName}/` + fileName;
 };
 

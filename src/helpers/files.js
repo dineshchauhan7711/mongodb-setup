@@ -6,7 +6,7 @@ const path = require('path');
 /**
  * File Upload
  */
-function uploadFile(file, pathFolder = 'profile') {
+const uploadFile = function (file, pathFolder = 'profile') {
      try {
           let fileName = String(Date.now()) + Math.floor(10000000 + Math.random() * 90000000) + path.extname(file.originalname);
 
@@ -35,7 +35,7 @@ function uploadFile(file, pathFolder = 'profile') {
 /***
  * File Delete
  */
-async function deleteFile(fileName, pathFolder = 'profile') {
+const deleteFile = async function (fileName, pathFolder = 'profile') {
      try {
           const deletePath = './public/images/' + pathFolder + '/' + fileName;
 
@@ -52,8 +52,7 @@ async function deleteFile(fileName, pathFolder = 'profile') {
           return {
                success: true
           }
-     }
-     catch (error) {
+     } catch (error) {
           console.log('Error :>> ', error);
           return {
                success: false
@@ -64,7 +63,7 @@ async function deleteFile(fileName, pathFolder = 'profile') {
 /***
  * Profile Image Validation
  */
-async function profileImageValidation(file) {
+const profileImageValidation = async function (file) {
      try {
           // Only one image is allowed
           if (file.length != 1) {
